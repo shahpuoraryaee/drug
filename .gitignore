@@ -1,0 +1,60 @@
+##########################################
+# Arya Pharma Manager
+##########################################
+
+# Environment
+.env
+.env.*
+
+# Local configuration (keep different on each machine)
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Editors
+.vscode/
+.idea/
+
+# Logs
+*.log
+php-error.log
+error_log
+
+# Archives
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+
+# Runtime
+cache/
+tmp/
+temp/
+sessions/
+
+# Upload cache only (keep actual uploads)
+uploads/tmp/
+
+# Backups
+backups/
+*.bak
+*.backup
+*.old
+
+# Dependencies
+/vendor/
+node_modules/
+
+# PHPUnit
+.phpunit.result.cache
+
+# Vim
+*.swp
+*.swo
