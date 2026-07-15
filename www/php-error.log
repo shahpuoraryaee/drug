@@ -1,0 +1,13 @@
+[14-Jul-2026 09:29:44 Asia/Kabul] PHP Warning:  Undefined array key "full_name" in /Applications/MAMP/htdocs/drug/www/index.php on line 75
+[14-Jul-2026 09:29:44 Asia/Kabul] PHP Fatal error:  Uncaught TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, null given in /Applications/MAMP/htdocs/drug/www/index.php:75
+Stack trace:
+#0 /Applications/MAMP/htdocs/drug/www/index.php(75): htmlspecialchars(NULL)
+#1 {main}
+  thrown in /Applications/MAMP/htdocs/drug/www/index.php on line 75
+[14-Jul-2026 09:44:37 Asia/Kabul] SQLSTATE[42S22]: Column not found: 1054 Unknown column 'phone' in 'field list'
+[14-Jul-2026 09:44:58 Asia/Kabul] SQLSTATE[23000]: Integrity constraint violation: 1052 Column 'status' in where clause is ambiguous
+[14-Jul-2026 09:45:00 Asia/Kabul] SQLSTATE[23000]: Integrity constraint violation: 1052 Column 'status' in where clause is ambiguous
+[14-Jul-2026 09:48:30 Asia/Kabul] SQLSTATE[42S22]: Column not found: 1054 Unknown column 'phone' in 'field list'
+[14-Jul-2026 09:48:37 Asia/Kabul] SQLSTATE[42S22]: Column not found: 1054 Unknown column 'method' in 'field list'
+[14-Jul-2026 16:55:05 Asia/Kabul] SQLSTATE[42S22]: Column not found: 1054 Unknown column 'phone' in 'field list'
+[14-Jul-2026 17:00:36 Asia/Kabul] SQLSTATE[42S22]: Column not found: 1054 Unknown column 'method' in 'field list'

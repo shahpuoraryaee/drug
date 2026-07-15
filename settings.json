@@ -1,0 +1,31 @@
+{
+  "_comment": "PHP Desktop configuration for Arya Pharma Manager. Place this next to phpdesktop-chrome.exe and put the www/ folder alongside it.",
+  "_scan_with_phone_note": "The default listen_on 127.0.0.1 keeps the app private to this PC. To use Scan-with-Phone, change listen_on to [\"0.0.0.0\", 8666] so phones on the same Wi-Fi can reach scan.php, and allow the port in Windows Firewall.",
+  "application": {
+    "single_instance_guid": "arya-pharma-manager-2026"
+  },
+  "main_window": {
+    "title": "Arya Pharma Manager",
+    "icon": "",
+    "default_size": [1280, 800],
+    "minimum_size": [1024, 640],
+    "center_on_screen": true,
+    "start_maximized": true,
+    "dpi_aware": true
+  },
+  "web_server": {
+    "listen_on": ["127.0.0.1", 0],
+    "www_directory": "www",
+    "index_files": ["index.php"],
+    "cgi_interpreter": "php/php-cgi.exe",
+    "cgi_extensions": ["php"],
+    "404_handler": "/index.php"
+  },
+  "chrome": {
+    "cache_path": "webcache",
+    "context_menu": { "enable_menu": true, "devtools": false, "view_source": false },
+    "external_navigation": false,
+    "reload_page_F5": true,
+    "command_line_switches": {}
+  }
+}
