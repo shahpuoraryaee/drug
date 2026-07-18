@@ -560,22 +560,34 @@ function sales_scanStart(): void
     ]);
     audit('scan_start', 'scan_sessions', null, null, ['token' => substr($token, 0, 8) . '…']);
 
-    // best-effort LAN address so the phone can reach this machine
+    // Build the phone-facing URL. On a real server (cPanel etc.) this should
+    // just be the site's own domain/scheme — https:// matters here since
+    // phone cameras require a secure context. The "guess a LAN IP" fallback
+    // below only makes sense for the offline desktop app, where the browser
+    // itself is already on a private address.
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
+            || (($_SERVER['SERVER_PORT'] ?? '') === '443');
+    $scheme = $isHttps ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'] ?? '127.0.0.1';
+    $hostName = preg_replace('/:\d+$/', '', $host);
+    $isPrivateHost = (bool) preg_match('/^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|localhost$)/i', $hostName);
+
     $lanIp = null;
-    if (function_exists('gethostname')) {
+    if ($isPrivateHost && function_exists('gethostname')) {
         $ips = @gethostbynamel((string) gethostname()) ?: [];
         foreach ($ips as $ip) {
             if ($ip !== '127.0.0.1' && !str_starts_with($ip, '169.254.')) { $lanIp = $ip; break; }
         }
     }
-    $port = parse_url('http://' . $host, PHP_URL_PORT);
-    $url = 'http://' . ($lanIp ?: preg_replace('/:\d+$/', '', $host))
+    $port = parse_url($scheme . '://' . $host, PHP_URL_PORT);
+    $displayHost = $isPrivateHost ? ($lanIp ?: $hostName) : $hostName;
+    $url = $scheme . '://' . $displayHost
          . ($port ? ":$port" : '') . dirname($_SERVER['SCRIPT_NAME'] ?? '/') ;
     $url = rtrim(str_replace('\\', '/', $url), '/') . '/scan.php?t=' . $token;
 
     ok(['token' => $token, 'url' => $url, 'lan_ip' => $lanIp,
-        'note' => $lanIp ? null : 'Could not detect a LAN IP — the phone must use this PC\'s network address.']);
+        'note' => ($isPrivateHost && !$lanIp) ? 'Could not detect a LAN IP — the phone must use this PC\'s network address.' : null]);
 }
 
 function sales_scanPoll(): void

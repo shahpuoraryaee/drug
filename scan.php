@@ -87,7 +87,7 @@ async function send(code) {
     });
     const j = await r.json();
     if (j.ok) {
-      msg.textContent = '✓ Sent — added to the cart'; msg.className = 'msg ok';
+      msg.textContent = '✓ Sent to the till — watch the screen'; msg.className = 'msg ok';
       last.textContent = code;
       if (navigator.vibrate) navigator.vibrate(80);
     } else {
