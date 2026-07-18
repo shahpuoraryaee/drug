@@ -164,6 +164,7 @@ foreach (['sweetalert2/sweetalert2.all.min.js', 'chartjs/chart.umd.js', 'qrcodej
 <script src="assets/js/app.js"></script>
 <script src="assets/js/screens.js"></script>
 <script src="assets/js/barcode.js"></script>
+<script src="assets/js/scan-input.js"></script>
 <script src="assets/js/sales.js"></script>
 <script>
 // Fill sidenav icons from the ICONS set (after app.js loads)

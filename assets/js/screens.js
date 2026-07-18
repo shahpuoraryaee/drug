@@ -1495,6 +1495,8 @@ const AUDIT_ENTITY_NAMES = {
 const AUDIT_ACTION_VERBS = {
   create: 'Added', update: 'Updated', delete: 'Deleted', restore: 'Restored',
   'return': 'Returned', cancel: 'Cancelled', login: 'Signed in', logout: 'Signed out',
+  scan_found: 'Scanned', scan_failed: 'Scan failed for', scan_start: 'Started phone scanning for',
+  scan_stop: 'Stopped phone scanning for',
 };
 const AUDIT_FIELD_LABELS = {
   medicine_name: 'Medicine', generic_name: 'Generic name', brand_name: 'Brand name',
@@ -1527,7 +1529,8 @@ function auditSummary(r) {
   let name = '';
   try {
     const d = JSON.parse(r.new_data || r.old_data || '{}');
-    name = d.medicine_name || d.full_name || d.name || d.invoice_number || d.username || d.description || '';
+    name = d.medicine_name || d.full_name || d.name || d.invoice_number || d.username || d.description
+         || (d.code ? 'code ' + d.code : '') || '';
   } catch {}
   return `${who} ${verb.toLowerCase()} ${what}${name ? ' — ' + name : (r.entity_id ? ' #' + r.entity_id : '')}`;
 }

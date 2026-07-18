@@ -50,6 +50,7 @@ en: {
   r_wrong:'Wrong medicine', r_damaged:'Damaged', r_expired:'Expired', r_mind:'Changed mind', r_dup:'Duplicate sale', r_other:'Other',
   completed:'completed', held:'held', cancelled:'cancelled',
   scan_hint:'Scan this QR with the phone camera (same Wi-Fi), or open the address by hand.',
+  scan_notfound:'Medicine not found',
   paid_short:'Paid', receipt:'Receipt', invdisc:'Invoice discount',
   /* v1.2 */
   m_audit:'Audit log', sub_audit:'Every important action, who did it, and what changed',
@@ -102,6 +103,7 @@ fa: {
   r_wrong:'دوای اشتباه', r_damaged:'شکسته/خراب', r_expired:'منقضی', r_mind:'انصراف مشتری', r_dup:'فروش تکراری', r_other:'دیگر',
   completed:'تکمیل', held:'معطل', cancelled:'لغوشده',
   scan_hint:'این QR را با کمرهٔ موبایل سکن کنید (همان وای‌فای)، یا آدرس را دستی باز کنید.',
+  scan_notfound:'دوا پیدا نشد',
   paid_short:'پرداخت', receipt:'رسید', invdisc:'تخفیف بل',
   /* v1.2 */
   m_audit:'ثبت وقایع', sub_audit:'هر عمل مهم، انجام‌دهنده و تغییرات آن',

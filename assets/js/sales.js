@@ -85,18 +85,23 @@ SCREENS.sales = {
         </div>
       </div>`;
 
-    /* search + autocomplete + barcode-wedge Enter */
+    /* search + autocomplete + barcode-wedge scanning (USB/BT/keyboard-wedge) */
     const q = $('#posQ', box);
-    productAutocomplete(q, box.querySelector('.acl'), p => { this.addProduct(p); q.value = ''; q.focus(); });
-    q.addEventListener('keydown', async (e) => {
-      if (e.key !== 'Enter') return;
-      const code = q.value.trim();
-      if (!code) return;
-      // USB/Bluetooth scanners type the code and send Enter — try exact barcode first
-      try {
-        const p = await api('sales.barcode', { code });
-        this.addProduct(p); q.value = '';
-      } catch { /* not a barcode — leave autocomplete to handle it */ }
+    const acl = box.querySelector('.acl');
+    productAutocomplete(q, acl, p => { this.addProduct(p); q.value = ''; q.focus(); });
+    this.scanner = ScanInput.attach(q, {
+      onBurst: (isFast) => { if (acl) acl.hidden = isFast; }, // don't fight autocomplete mid-scan
+      onScan: async (code) => {
+        try {
+          const p = await api('sales.barcode', { code });
+          const row = await this.addProduct(p);
+          ScanInput.flashRow(row);
+          return true;
+        } catch (e) {
+          toast(`${t('scan_notfound')}: ${code}`, 'err');
+          return false;
+        }
+      },
     });
 
     $('#posScan', box).addEventListener('click', () => this.phoneScan());
@@ -130,24 +135,29 @@ SCREENS.sales = {
   },
 
   async addProduct(p) {
-    if (p.status && p.status !== 'active') { toast(`'${p.medicine_name}' is not active.`, 'warn'); return; }
+    if (p.status && p.status !== 'active') { toast(`'${p.medicine_name}' is not active.`, 'warn'); return null; }
     const found = this.cart.find(c => c.product_id === +p.id && !c.batch_id);
-    if (found) { found.quantity += 1; this.paintCart(); return; }
-    const line = {
-      product_id: +p.id, name: p.medicine_name, code: p.product_code, unit: p.unit || '',
-      base_price: +p.selling_price, unit_price: +p.selling_price,
-      quantity: 1, discount: 0, discRaw: '', batch_id: 0, batch_label: 'FEFO',
-      stock: +p.quantity, expiry: null,
-    };
-    this.cart.push(line);
-    this.paintCart();
-    // lazily fetch sellable batches: shows the FEFO expiry and true sellable stock (§3/§5)
-    api('sales.batches', { product_id: line.product_id }).then(bs => {
-      if (!this.cart.includes(line)) return;
-      line.expiry = bs.length ? bs[0].expiry_date : null;
-      line.stock = bs.reduce((a, b) => a + +b.quantity, 0);
+    let idx;
+    if (found) { found.quantity += 1; idx = this.cart.indexOf(found); this.paintCart(); }
+    else {
+      const line = {
+        product_id: +p.id, name: p.medicine_name, code: p.product_code, unit: p.unit || '',
+        base_price: +p.selling_price, unit_price: +p.selling_price,
+        quantity: 1, discount: 0, discRaw: '', batch_id: 0, batch_label: 'FEFO',
+        stock: +p.quantity, expiry: null,
+      };
+      this.cart.push(line);
+      idx = this.cart.length - 1;
       this.paintCart();
-    }).catch(() => {});
+      // lazily fetch sellable batches: shows the FEFO expiry and true sellable stock (§3/§5)
+      api('sales.batches', { product_id: line.product_id }).then(bs => {
+        if (!this.cart.includes(line)) return;
+        line.expiry = bs.length ? bs[0].expiry_date : null;
+        line.stock = bs.reduce((a, b) => a + +b.quantity, 0);
+        this.paintCart();
+      }).catch(() => {});
+    }
+    return this.el.querySelector(`tr[data-i="${idx}"]`);
   },
 
   paintCart() {
@@ -504,8 +514,16 @@ SCREENS.sales = {
         const r = await api('sales.scanPoll', { token: d.token });
         if (r.expired) { $('#scanStatus', back).textContent = 'Session expired.'; clearInterval(this.scan.timer); return; }
         for (const code of r.barcodes) {
-          try { const p = await api('sales.barcode', { code }); this.addProduct(p); got++; }
-          catch { toast(`? ${code}`, 'warn'); }
+          try {
+            const p = await api('sales.barcode', { code });
+            const row = await this.addProduct(p);
+            ScanInput.flashRow(row);
+            ScanInput.beep(true);
+            got++;
+          } catch {
+            toast(`${t('scan_notfound')}: ${code}`, 'warn');
+            ScanInput.beep(false);
+          }
         }
         $('#scanStatus', back).textContent = got ? `✓ ${got}` : 'Waiting for the phone…';
       } catch { /* transient */ }

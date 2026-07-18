@@ -558,6 +558,7 @@ function sales_scanStart(): void
         'token' => $token, 'created_by' => Auth::id(),
         'expires_at' => date('Y-m-d H:i:s', time() + 15 * 60),
     ]);
+    audit('scan_start', 'scan_sessions', null, null, ['token' => substr($token, 0, 8) . '…']);
 
     // best-effort LAN address so the phone can reach this machine
     $host = $_SERVER['HTTP_HOST'] ?? '127.0.0.1';
@@ -601,23 +602,34 @@ function sales_scanStop(): void
     $token = inStr('token');
     if (preg_match('/^[a-f0-9]{32}$/', $token)) {
         DB::exec('DELETE FROM scan_sessions WHERE token = ? AND created_by = ?', [$token, Auth::id()]);
+        audit('scan_stop', 'scan_sessions', null, null, ['token' => substr($token, 0, 8) . '…']);
     }
     ok();
 }
 
-/** Exact barcode → product (POS scan lookup; falls back to code match). */
+/** Barcode → product. Search priority: barcode, then product code, then
+ *  medicine name — matches the barcode-scanning spec's fallback chain. */
 function sales_barcode(): void
 {
     Auth::require('sales', 'view');
     $code = inStr('code');
     if ($code === '') fail('Empty barcode.');
+    $cols = "p.id, p.product_code, p.medicine_name, p.generic_name, p.selling_price,
+             p.quantity, p.unit, p.status";
     $p = DB::row(
-        "SELECT p.id, p.product_code, p.medicine_name, p.generic_name, p.selling_price,
-                p.quantity, p.unit, p.status
-           FROM products p
-          WHERE p.deleted_at IS NULL AND (p.barcode = ? OR p.product_code = ?)
-          LIMIT 1", [$code, $code]);
-    if (!$p) fail('No product with that barcode.', 404);
+        "SELECT $cols FROM products p
+          WHERE p.deleted_at IS NULL AND (p.barcode = ? OR p.product_code = ?) LIMIT 1",
+        [$code, $code]);
+    if (!$p) {
+        $p = DB::row(
+            "SELECT $cols FROM products p
+              WHERE p.deleted_at IS NULL AND p.medicine_name = ? LIMIT 1", [$code]);
+    }
+    if (!$p) {
+        audit('scan_failed', 'products', null, null, ['code' => $code]);
+        fail('No product with that barcode.', 404);
+    }
+    audit('scan_found', 'products', (int) $p['id'], null, ['code' => $code]);
     ok($p);
 }
 
